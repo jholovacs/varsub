@@ -1,39 +1,67 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO;
-using System.Threading.Tasks;
 using DotNet.VarSub.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace DotNet.VarSub.Console
 {
-	class Program
+	public class Program
 	{
-		static async Task Main(FileInfo file, 
-			string parameterName, 
-			string value)
+		public static int Main(string[] args)
 		{
-			var loggingFactory = ConfigureLogging();
-			var logger = loggingFactory.CreateLogger<Program>();
-			await using var readStream = File.OpenRead(file.FullName);
-			var subber = new Subber(loggingFactory);
+			var rootCommand = new RootCommand
+			{
+				new Option<FileInfo>("--file", "path to the UTF-8 encoded JSON file"),
+				new Option<string>("--parameterPath", "path of the parameter in the JSON file."),
+				new Option<string>("--value", "the new value to replace with the existing value.")
+			};
 
-			await subber.ReadDocument(readStream);
-			subber.Sub(parameterName, value);
+			rootCommand.Description = "variable substitution tool";
+			rootCommand.Name = "varsub";
 
-			await using var writeStream = File.OpenWrite(file.FullName);
-			await subber.WriteDocument(writeStream);
+			rootCommand.Handler = CommandHandler.Create<FileInfo, string, string>(async (file, parameterName, value) =>
+			{
+				var loggingFactory = ConfigureLogging();
+				var logger = loggingFactory.CreateLogger<Program>();
+				try
+				{
+					await using var readStream = File.OpenRead(file.FullName);
+					var subber = new Subber(loggingFactory);
 
-			logger.LogInformation($"Updated the value for parameter '{parameterName}' in file '{file.FullName}'.");
+					await subber.ReadDocument(readStream);
+					subber.Sub(parameterName, value);
+
+					await using var writeStream = File.OpenWrite(file.FullName);
+					await subber.WriteDocument(writeStream);
+
+					logger.LogInformation(
+						$"Updated the value for parameter '{parameterName}' in file '{file.FullName}'.");
+					return 0;
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "Cannot run the variable substitution. The exception is included.");
+					return -1;
+				}
+			});
+
+			return rootCommand.InvokeAsync(args).Result;
 		}
 
-		static ILoggerFactory ConfigureLogging()
+		private static ILoggerFactory ConfigureLogging()
 		{
 			var loggingFactory = LoggerFactory.Create(config =>
 			{
-				config.AddConsole(consoleConfig =>
+				config.AddSimpleConsole(consoleConfig =>
 				{
-					consoleConfig.LogToStandardErrorThreshold = LogLevel.Information;
+					consoleConfig.ColorBehavior = LoggerColorBehavior.Enabled;
+					consoleConfig.TimestampFormat = "yyyy-MM-ddThh:mm:ss ";
+					consoleConfig.UseUtcTimestamp = true;
+					consoleConfig.IncludeScopes = true;
+					consoleConfig.SingleLine = false;
 				});
 				config.Configure(builder => { });
 			});

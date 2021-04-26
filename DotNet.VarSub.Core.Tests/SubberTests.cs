@@ -36,6 +36,15 @@ namespace DotNet.VarSub.Core.Tests
 			}
 			";
 
+		private const string ExpectedJson = @"{
+  ""ConnectionStrings"": {
+    ""ApplicationDb"": ""server=localhost;port=4321;username=devuser;password=devsarecool123"",
+    ""ServiceBus"": ""Endpoint=devenv.cloudservice.com;SharedSecret=KJSDLKFJSDFKJSDL;Port=1234"",
+    ""Cdn"": ""test.cdn.com""
+  },
+  ""Environment"": ""DEV""
+}";
+
 		private async Task<Stream> GetJsonStream()
 		{
 			var stream = new MemoryStream();
@@ -46,35 +55,14 @@ namespace DotNet.VarSub.Core.Tests
 			return stream;
 		}
 
-		[Fact]
-		public void SubberInstantiates()
+		private async Task<string> GetStringFromStream(Stream stream)
 		{
-			//arrange
-			var subber = GetService();
-
-			//act
-			//yeah this is just making sure everything builds ok and the service exists.  No action to take.
-
-			//assert
-			Assert.NotNull(subber);
+			using var reader = new StreamReader(stream, Encoding.UTF8, true, -1, true);
+			return await reader.ReadToEndAsync();
 		}
 
 		[Fact]
-		public async Task SubberLoadsJson()
-		{
-			//arrange
-			var subber = GetService();
-			await using var jsonStream = await GetJsonStream();
-
-			//act
-			await subber.ReadDocument(jsonStream);
-
-			//assert
-			Assert.True(subber.IsLoaded);
-		}
-
-		[Fact]
-		public async Task SubstitutionHappens()
+		public async Task SubberEmitsChangedDom()
 		{
 			//arrange
 			var subber = GetService();
@@ -86,10 +74,17 @@ namespace DotNet.VarSub.Core.Tests
 			subber.Sub("ConnectionStrings.Cdn", expected);
 			var dom = subber.CurrentDocument();
 			string actual = dom.ConnectionStrings.Cdn;
+			await using var outStream = new MemoryStream();
+			await subber.WriteDocument(outStream);
+			outStream.Position = 0;
+			var json = await GetStringFromStream(outStream);
 
 			//assert
+			Assert.True(subber.IsLoaded);
 			Assert.NotNull(dom);
 			Assert.Equal(expected, actual);
+			Assert.NotNull(json);
+			Assert.Equal(ExpectedJson, json);
 		}
 	}
 }

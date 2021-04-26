@@ -52,7 +52,7 @@ namespace DotNet.VarSub.Core
 		{
 			try
 			{
-				await using var textWriter = new StreamWriter(jsonOut);
+				await using var textWriter = new StreamWriter(jsonOut, Encoding.UTF8, 2048, true);
 				using var jsonWriter = new JsonTextWriter(textWriter) {Formatting = Formatting.Indented};
 				await _jsonDocument.WriteToAsync(jsonWriter);
 			}
