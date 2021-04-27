@@ -6,6 +6,8 @@ YAML seems to be taking over devops, but there are some nice features in .NET Co
 
 Your only option for these types of systems is to either include environment-specific settings in the yml file itself (things like production database credentials and other unmentionables), or script out some way of capturing a secure parameter in the devops system of your choice and manually replacing the value in the settings file. I really didn't like either option.
 
+I went on StackOverflow (see [here](https://stackoverflow.com/questions/67102464/how-to-perform-a-variable-substitution-for-an-appsettings-json-file-in-aws-coded)) in the hopes of someone being able to explain to me what other people were doing. My question was not well-received.
+
 So, I built a simple tool that would allow for simple variable substitution in a JSON file, based upon that secure parameter store.
 
 # To Install
