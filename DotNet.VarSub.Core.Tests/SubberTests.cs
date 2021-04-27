@@ -1,5 +1,4 @@
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -10,21 +9,6 @@ namespace DotNet.VarSub.Core.Tests
 {
 	public class SubberTests
 	{
-		private readonly Mock<ILoggerFactory> _loggerFactoryMock = new Mock<ILoggerFactory>();
-		private readonly Mock<ILogger> _loggerMock = new Mock<ILogger>();
-
-		public SubberTests()
-		{
-			_loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>()))
-				.Returns(() => _loggerMock.Object);
-		}
-
-		private Subber GetService()
-		{
-			var subber = new Subber(_loggerFactoryMock.Object);
-			return subber;
-		}
-
 		private const string SampleJson = @"
 			{
 				""ConnectionStrings"":{
@@ -44,6 +28,19 @@ namespace DotNet.VarSub.Core.Tests
   },
   ""Environment"": ""DEV""
 }";
+		private readonly Mock<ILoggerFactory> _loggerFactoryMock = new Mock<ILoggerFactory>();
+		private readonly Mock<ILogger> _loggerMock = new Mock<ILogger>();
+
+		public SubberTests()
+		{
+			_loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(() => _loggerMock.Object);
+		}
+
+		private Subber GetService()
+		{
+			var subber = new Subber(_loggerFactoryMock.Object);
+			return subber;
+		}
 
 		private async Task<Stream> GetJsonStream()
 		{

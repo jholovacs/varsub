@@ -3,11 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNet.VarSub.Console", "DotNet.VarSub.Console\DotNet.VarSub.Console.csproj", "{FAC33BF2-946F-49F1-AA97-C57880C99150}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNet.VarSub.Console", "DotNet.VarSub.Console\DotNet.VarSub.Console.csproj", "{FAC33BF2-946F-49F1-AA97-C57880C99150}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNet.VarSub.Core", "DotNet.VarSub.Core\DotNet.VarSub.Core.csproj", "{7E50E956-F3E8-464E-8D51-A4E50E2D2F8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNet.VarSub.Core.Tests", "DotNet.VarSub.Core.Tests\DotNet.VarSub.Core.Tests.csproj", "{336E8FC9-5417-4412-AFB8-7D5526EB7AC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNet.VarSub.Core.Tests", "DotNet.VarSub.Core.Tests\DotNet.VarSub.Core.Tests.csproj", "{336E8FC9-5417-4412-AFB8-7D5526EB7AC2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevOps", "DevOps", "{A4E61E3D-9DD9-4744-AA12-798ACEC6A057}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
