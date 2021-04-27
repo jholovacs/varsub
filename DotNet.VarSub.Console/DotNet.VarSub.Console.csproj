@@ -6,6 +6,21 @@
     <PackAsTool>true</PackAsTool>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <ToolCommandName>varsub</ToolCommandName>
+    <AssemblyName>varsub</AssemblyName>
+    <Authors>Jeremy Holovacs</Authors>
+    <Company>Private User</Company>
+    <Description>Allows devops deployment workflows to use a dotnet global tool to perform variable substitution on JSON files.  Work in progress</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/jholovacs/varsub</PackageProjectUrl>
+    <Copyright>2021 Jeremy Holovacs</Copyright>
+    <RepositoryUrl>https://github.com/jholovacs/varsub</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +31,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DotNet.VarSub.Core\DotNet.VarSub.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
