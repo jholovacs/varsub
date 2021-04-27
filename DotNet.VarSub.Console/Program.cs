@@ -15,29 +15,42 @@ namespace DotNet.VarSub.Console
 
 		public static int Main(string[] args)
 		{
+			var program = new Program();
+			return program.Run(args);
+		}
+
+		private int Run(string[] args)
+		{
 			try
 			{
-				ConfigureLogging();
-				_logger = _loggerFactory.CreateLogger<Program>();
-
 				var rootCommand = GenerateRootCommand();
 
-				rootCommand.Handler = CommandHandler.Create<FileInfo, string, string>(
-					async (file, parameterName, value) =>
+				rootCommand.Handler = CommandHandler.Create<FileInfo, string, string, LogLevel>(
+					async (file, parameterPath, value, logLevel) =>
 					{
 						try
 						{
+							ConfigureLogging(logLevel);
+							_logger = _loggerFactory.CreateLogger<Program>();
+
+							_logger.LogDebug($"File Location: '{file.FullName}'");
+							_logger.LogDebug($"Parameter Path: '{parameterPath}'");
+							_logger.LogDebug($"Value: '{new string('*', value.Length)}' (masked for security)");
+							_logger.LogDebug($"Log Level: '{logLevel}'");
+
+							if (!file.Exists) throw new FileNotFoundException($"File not found at '{file.FullName}'");
+
 							await using var readStream = File.OpenRead(file.FullName);
 							var subber = new Subber(_loggerFactory);
 
 							await subber.ReadDocument(readStream);
-							subber.Sub(parameterName, value);
+							subber.Sub(parameterPath, value);
 
-							await using var writeStream = File.OpenWrite(file.FullName);
+							await using var writeStream = File.Open(file.FullName, FileMode.Create, FileAccess.Write);
 							await subber.WriteDocument(writeStream);
 
 							_logger.LogInformation(
-								$"Updated the value for parameter '{parameterName}' in file '{file.FullName}'.");
+								$"Updated the value for parameter '{parameterPath}' in file '{file.FullName}'.");
 							return 0;
 						}
 						catch (Exception ex)
@@ -56,21 +69,24 @@ namespace DotNet.VarSub.Console
 			}
 		}
 
-		private static RootCommand GenerateRootCommand()
+		private RootCommand GenerateRootCommand()
 		{
+			var version = GetType().Assembly.GetName().Version;
 			var rootCommand = new RootCommand
 			{
-				new Option<FileInfo>("--file", "path to the UTF-8 encoded JSON file"),
-				new Option<string>("--parameterPath", "path of the parameter in the JSON file."),
-				new Option<string>("--value", "the new value to replace with the existing value.")
+				new Option<FileInfo>(new[] {"--file", "-f"}, "Path to the UTF-8 encoded JSON file"),
+				new Option<string>(new[] {"--parameter-path", "-p"}, "JSON path of the parameter in the file."),
+				new Option<string>(new[] {"--value", "-v"}, "The new value to replace with the existing value."),
+				new Option<LogLevel>(new[] {"--log-level", "-l"}, () => LogLevel.Information, "Logging level."),
 			};
 
-			rootCommand.Description = "variable substitution tool";
+			rootCommand.Description = $"Variable Substitution Tool v{version}";
 			rootCommand.Name = "varsub";
+			rootCommand.TreatUnmatchedTokensAsErrors = true;
 			return rootCommand;
 		}
 
-		private static void ConfigureLogging()
+		private void ConfigureLogging(LogLevel logLevel)
 		{
 			try
 			{
@@ -85,6 +101,7 @@ namespace DotNet.VarSub.Console
 						consoleConfig.SingleLine = false;
 					});
 					config.Configure(builder => { });
+					config.SetMinimumLevel(logLevel);
 				});
 			}
 			catch (Exception ex)
